@@ -1,0 +1,8 @@
+storage:
+  files: "test-photo.jpg"
+  s3:
+    bucket: "dev-example"
+    region: "us-east-1"
+    key_id: "A********************Z"
+    access_key: "9*********************************S"
+    acl: "public-read"
