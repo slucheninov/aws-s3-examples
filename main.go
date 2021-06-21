@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,7 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-const ComfigYaml string = "config.yaml"
+const ComfigYaml string = "config.yaml_"
 
 type Config struct {
 	Storage struct {
@@ -26,7 +25,7 @@ type Config struct {
 			AccessKey  string `yaml:"access_key" envconfig:"STORAGE_S3_SECRET"`
 			ACL        string `yaml:"acl" envconfig:"STORAGE_S3_ACL"`
 		}
-		Files string `yaml: "files" envconfig:"STORAGE_FILES"`
+		Files string `yaml:"files" envconfig:"STORAGE_FILES"`
 	}
 }
 
@@ -43,9 +42,12 @@ func main() {
 	}
 
 	err = yaml.Unmarshal(cfgData, &configReader)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	//fmt.Printf("%s", configReader)
-	fmt.Println("Bucket: ", configReader.Storage.S3.BucketName)
+	//fmt.Println("Bucket: ", configReader.Storage.S3.BucketName)
+	log.Printf("Bucket: %v", configReader.Storage.S3.BucketName)
 	// Create a single AWS session
 	sessions, err := session.NewSession(
 		&aws.Config{
@@ -62,7 +64,7 @@ func main() {
 		log.Fatal(err)
 	}
 	// Uploads
-	fmt.Print("Upload file: ")
+	log.Print("Upload file: ")
 	_, err = s3.New(sessions).PutObject(&s3.PutObjectInput{
 		Bucket:               aws.String(configReader.Storage.S3.BucketName),
 		Key:                  aws.String(configReader.Storage.Files),
@@ -75,8 +77,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("OK")
-	fmt.Print("Check file in bucket: ")
+	log.Print("OK")
+	log.Print("Check file in bucket: ")
 	checktestfile := &s3.GetObjectInput{
 		Bucket: aws.String(configReader.Storage.S3.BucketName),
 		Key:    aws.String(configReader.Storage.Files),
@@ -85,8 +87,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("OK")
-	fmt.Print("Remove file: ")
+	log.Print("OK")
+	log.Print("Remove file: ")
 	deletetestfile := &s3.DeleteObjectInput{
 		Bucket: aws.String(configReader.Storage.S3.BucketName),
 		Key:    aws.String(configReader.Storage.Files),
@@ -95,5 +97,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("OK")
+	log.Print("OK")
 }
